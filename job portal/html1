@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Listings</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        
+        #job-list {
+            margin-top: 30px;
+        }
+        
+        .job-item {
+            background-color: #fafafa;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        
+        .job-item strong {
+            display: block;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .job-item p {
+            font-size: 16px;
+            color: #555;
+        }
+        
+        /* Form Styles */
+        #job-form {
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        
+        #job-form input, #job-form button {
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Job Listings</h1>
+
+        <!-- Job List Section -->
+        <div id="job-list">
+            <!-- Job items will be added here dynamically -->
+        </div>
+
+        <h2>Add a New Job</h2>
+        <form id="job-form">
+            <input type="text" id="job-title" placeholder="Job Title" required>
+            <input type="text" id="company" placeholder="Company Name" required>
+            <button type="submit">Add Job</button>
+        </form>
+    </div>
+
+    <script>
+        // Function to fetch and display jobs
+        function getJobs() {
+            fetch('http://localhost:8080/api/jobs')
+                .then(response => response.json())
+                .then(data => {
+                    const jobList = document.getElementById('job-list');
+                    jobList.innerHTML = ''; // Clear existing list
+                    data.forEach(job => {
+                        const jobItem = document.createElement('div');
+                        jobItem.classList.add('job-item');
+                        jobItem.innerHTML = `
+                            <strong>${job.title}</strong>
+                            <p>Company: ${job.company}</p>
+                        `;
+                        jobList.appendChild(jobItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching jobs:', error);
+                });
+        }
+
+        // Function to add a new job
+        document.getElementById('job-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const jobTitle = document.getElementById('job-title').value;
+            const company = document.getElementById('company').value;
+
+            const newJob = {
+                title: jobTitle,
+                company: company
+            };
+
+            fetch('http://localhost:8080/api/jobs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newJob),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Job added:', data);
+                getJobs();  // Refresh the job list after adding a new job
+                document.getElementById('job-form').reset();  // Clear form fields
+            })
+            .catch(error => {
+                console.error('Error adding job:', error);
+            });
+        });
+
+        // Load jobs when the page is loaded
+        window.onload = getJobs;
+    </script>
+
+</body>
+</html>
